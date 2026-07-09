@@ -1,19 +1,33 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { getCategories, getProducts, getProductsByCategory } from '../api/api';
+import { Dispatch, SetStateAction, useCallback, useEffect, useRef, useState } from 'react';
+import { Category, getCategories, getProducts, getProductsByCategory, Product } from '../api/api';
 
-export function useProducts() {
-  const [products, setProducts] = useState([]);
-  const [categories, setCategories] = useState([]);
+export type UseProductsResult = {
+  products: Product[];
+  categories: Category[];
+  loading: boolean;
+  loadingMore: boolean;
+  refreshing: boolean;
+  error: string | null;
+  selectedCategory: number | null;
+  setSelectedCategory: Dispatch<SetStateAction<number | null>>;
+  setRefreshing: Dispatch<SetStateAction<boolean>>;
+  hasMore: boolean;
+  loadProducts: (categoryId?: number | null, reset?: boolean) => Promise<void>;
+};
+
+export function useProducts(): UseProductsResult {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
-  const [error, setError] = useState(null);
-  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [error, setError] = useState<string | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const pageRef = useRef(1);
 
-  const loadCategories = useCallback(async () => {
+  const loadCategories = useCallback(async (): Promise<void> => {
     try {
       const data = await getCategories();
       setCategories([{ id: null, name: 'All' }, ...data]);
@@ -22,7 +36,7 @@ export function useProducts() {
     }
   }, []);
 
-  const loadProducts = useCallback(async (categoryId = null, reset = true) => {
+  const loadProducts = useCallback(async (categoryId: number | null = null, reset = true): Promise<void> => {
     const offset = reset ? 0 : pageRef.current * 10;
 
     if (reset) {
@@ -49,7 +63,7 @@ export function useProducts() {
         pageRef.current += 1;
         setHasMore(data.length === 10);
       }
-    } catch (err) {
+    } catch {
       setError('No se pudieron cargar los productos. Intenta de nuevo.');
     } finally {
       setLoading(false);

@@ -3,7 +3,7 @@ import { Alert, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useCart } from '../context/CartContext';
 
-export default function CartScreen({ navigation }) {
+export default function CartScreen({ navigation }: { navigation: any }) {
   const { items, removeFromCart, clearCart } = useCart();
 
   const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0);

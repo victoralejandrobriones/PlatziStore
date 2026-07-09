@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -8,71 +8,27 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { getCategories, getProducts, getProductsByCategory } from '../api/api';
+import { useProducts } from '../hooks/useProducts';
 import ProductCard from '../components/ProductCard';
 import { useCart } from '../context/CartContext';
 
-export default function HomeScreen({ navigation }) {
+export default function HomeScreen({ navigation }: { navigation: any }) {
   const { cartCount } = useCart();
-  const [products, setProducts] = useState([]);
-  const [categories, setCategories] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
-  const [refreshing, setRefreshing] = useState(false);
-  const [error, setError] = useState(null);
-  const [selectedCategory, setSelectedCategory] = useState(null);
-  const [page, setPage] = useState(1);
-  const [hasMore, setHasMore] = useState(true);
+  const {
+    products,
+    categories,
+    loading,
+    loadingMore,
+    refreshing,
+    error,
+    selectedCategory,
+    setSelectedCategory,
+    setRefreshing,
+    hasMore,
+    loadProducts,
+  } = useProducts();
 
-  useEffect(() => {
-    loadCategories();
-    loadProducts(null, true);
-  }, []);
-
-  async function loadCategories() {
-    try {
-      const data = await getCategories();
-      setCategories([{ id: null, name: 'All' }, ...data]);
-    } catch (err) {
-      console.warn('No se pudieron cargar las categorías', err);
-    }
-  }
-
-  async function loadProducts(categoryId = null, reset = true) {
-    const offset = reset ? 0 : page * 10;
-
-    if (reset) {
-      setProducts([]);
-      setPage(1);
-      setHasMore(true);
-    } else {
-      setLoadingMore(true);
-    }
-
-    try {
-      setError(null);
-      const data = categoryId
-        ? await getProductsByCategory(categoryId, offset, 10)
-        : await getProducts(offset, 10);
-
-      if (reset) {
-        setProducts(data);
-        setHasMore(data.length === 10);
-      } else {
-        setProducts((prev) => [...prev, ...data]);
-        setPage((prev) => prev + 1);
-        setHasMore(data.length === 10);
-      }
-    } catch (err) {
-      setError('No se pudieron cargar los productos. Intenta de nuevo.');
-    } finally {
-      setLoading(false);
-      setLoadingMore(false);
-      setRefreshing(false);
-    }
-  }
-
-  function handleCategorySelect(categoryId) {
+  function handleCategorySelect(categoryId: number | null) {
     setSelectedCategory(categoryId);
     loadProducts(categoryId, true);
   }

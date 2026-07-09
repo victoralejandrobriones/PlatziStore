@@ -1,11 +1,29 @@
-import React, { createContext, useContext, useMemo, useState } from 'react';
+import React, { createContext, ReactNode, useContext, useMemo, useState } from 'react';
+import { Product } from '../api/api';
 
-const CartContext = createContext();
+type CartItem = {
+  id: number;
+  title: string;
+  price: number;
+  image?: string;
+  quantity: number;
+  category: string;
+};
 
-export function CartProvider({ children }) {
-  const [items, setItems] = useState([]);
+type CartContextValue = {
+  items: CartItem[];
+  addToCart: (product: Product) => void;
+  removeFromCart: (productId: number) => void;
+  clearCart: () => void;
+  cartCount: number;
+};
 
-  const addToCart = (product) => {
+const CartContext = createContext<CartContextValue | undefined>(undefined);
+
+export function CartProvider({ children }: { children: ReactNode }) {
+  const [items, setItems] = useState<CartItem[]>([]);
+
+  const addToCart = (product: Product) => {
     setItems((prevItems) => {
       const existingItem = prevItems.find((item) => item.id === product.id);
 
@@ -29,7 +47,7 @@ export function CartProvider({ children }) {
     });
   };
 
-  const removeFromCart = (productId) => {
+  const removeFromCart = (productId: number) => {
     setItems((prevItems) => prevItems.filter((item) => item.id !== productId));
   };
 

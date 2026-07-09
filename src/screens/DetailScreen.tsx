@@ -2,8 +2,18 @@ import React from 'react';
 import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useCart } from '../context/CartContext';
+import { Product } from '../api/api';
 
-export default function DetailScreen({ route, navigation }) {
+type DetailScreenProps = {
+  route: {
+    params?: {
+      product?: Product;
+    };
+  };
+  navigation: any;
+};
+
+export default function DetailScreen({ route, navigation }: DetailScreenProps) {
   const { product } = route.params || {};
   const { addToCart } = useCart();
 

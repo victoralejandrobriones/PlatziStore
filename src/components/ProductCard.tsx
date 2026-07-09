@@ -1,7 +1,13 @@
 import React from 'react';
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Product } from '../api/api';
 
-export default function ProductCard({ product, onPress }) {
+type ProductCardProps = {
+  product: Product;
+  onPress: () => void;
+};
+
+export default function ProductCard({ product, onPress }: ProductCardProps) {
   const imageUrl = product.images?.[0];
 
   return (
