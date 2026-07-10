@@ -1,19 +1,40 @@
+/**
+ * CartScreen.tsx
+ *
+ * Pantalla encargada de mostrar los productos agregados al carrito de compras.
+ * Permite visualizar el resumen de la compra, eliminar productos, calcular
+ * el total y simular el proceso de pago.
+ */
+
 import React from 'react';
 import { Alert, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useCart } from '../context/CartContext';
 
+/**
+ * Pantalla del carrito de compras.
+ */
 export default function CartScreen({ navigation }: { navigation: any }) {
+  // Obtiene el estado y las operaciones disponibles del carrito.
   const { items, removeFromCart, clearCart } = useCart();
 
+  // Calcula el importe total de la compra considerando la cantidad
+  // de cada producto agregado al carrito.
   const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
+  /**
+   * Simula el proceso de pago.
+   *
+   * Una vez finalizada la compra, vacía el carrito, muestra un mensaje
+   * de confirmación y regresa a la pantalla anterior.
+   */
   function handlePay() {
     clearCart();
     Alert.alert('Pago simulado', 'Tu compra fue procesada correctamente.');
     navigation.goBack();
   }
 
+  // Muestra un estado vacío cuando no existen productos en el carrito.
   if (!items.length) {
     return (
       <View style={styles.emptyState}>
@@ -25,32 +46,45 @@ export default function CartScreen({ navigation }: { navigation: any }) {
 
   return (
     <SafeAreaView edges={['bottom']} style={styles.safeArea}>
-        <View style={styles.container}>
+      <View style={styles.container}>
         <FlatList
-            data={items}
-            keyExtractor={(item) => item.id.toString()}
-            contentContainerStyle={styles.list}
-            renderItem={({ item }) => (
+          data={items}
+          keyExtractor={(item) => item.id.toString()}
+          contentContainerStyle={styles.list}
+          renderItem={({ item }) => (
             <View style={styles.itemCard}>
-                <View style={styles.itemInfo}>
+              <View style={styles.itemInfo}>
                 <Text style={styles.itemTitle}>{item.title}</Text>
-                <Text style={styles.itemMeta}>Cantidad: {item.quantity}</Text>
-                <Text style={styles.itemPrice}>${item.price * item.quantity}</Text>
-                </View>
-                <TouchableOpacity onPress={() => removeFromCart(item.id)}>
+                <Text style={styles.itemMeta}>
+                  Cantidad: {item.quantity}
+                </Text>
+                <Text style={styles.itemPrice}>
+                  ${item.price * item.quantity}
+                </Text>
+              </View>
+
+              {/* Permite eliminar un producto específico del carrito. */}
+              <TouchableOpacity onPress={() => removeFromCart(item.id)}>
                 <Text style={styles.removeText}>Quitar</Text>
-                </TouchableOpacity>
+              </TouchableOpacity>
             </View>
-            )}
+          )}
         />
 
+        {/* Resumen de la compra y acción para simular el pago. */}
         <View style={styles.footer}>
-            <Text style={styles.total}>Total: ${total.toFixed(2)}</Text>
-            <TouchableOpacity style={styles.payButton} onPress={handlePay}>
+          <Text style={styles.total}>
+            Total: ${total.toFixed(2)}
+          </Text>
+
+          <TouchableOpacity
+            style={styles.payButton}
+            onPress={handlePay}
+          >
             <Text style={styles.payText}>Pagar</Text>
-            </TouchableOpacity>
+          </TouchableOpacity>
         </View>
-        </View>
+      </View>
     </SafeAreaView>
   );
 }

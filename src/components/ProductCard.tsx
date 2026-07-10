@@ -1,24 +1,59 @@
+/**
+ * ProductCard.tsx
+ *
+ * Componente reutilizable encargado de representar un producto dentro del
+ * catálogo. Muestra la información básica del producto y notifica cuando
+ * el usuario lo selecciona para visualizar su detalle.
+ */
+
 import React from 'react';
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Product } from '../api/api';
 
+/**
+ * Propiedades requeridas por el componente ProductCard.
+ */
 type ProductCardProps = {
+  /**
+   * Información del producto a mostrar.
+   */
   product: Product;
+
+  /**
+   * Función ejecutada cuando el usuario presiona la tarjeta.
+   */
   onPress: () => void;
 };
 
+/**
+ * Tarjeta utilizada para mostrar un resumen de un producto.
+ *
+ * Presenta la imagen principal, el nombre, la categoría y el precio del
+ * producto. Toda la tarjeta es interactiva mediante el componente Pressable.
+ *
+ * @param product Producto a visualizar.
+ * @param onPress Acción a ejecutar al seleccionar la tarjeta.
+ */
 export default function ProductCard({ product, onPress }: ProductCardProps) {
+  // Se utiliza la primera imagen del arreglo como imagen principal.
   const imageUrl = product.images?.[0];
 
   return (
     <Pressable style={styles.card} onPress={onPress}>
       <Image source={{ uri: imageUrl }} style={styles.image} />
+
       <View style={styles.info}>
         <Text style={styles.title} numberOfLines={2}>
           {product.title}
         </Text>
-        <Text style={styles.category}>{product.category?.name || 'General'}</Text>
-        <Text style={styles.price}>${product.price}</Text>
+
+        <Text style={styles.category}>
+          {product.category?.name || 'General'}
+        </Text>
+
+        <Text style={styles.price}>
+          ${product.price}
+        </Text>
       </View>
     </Pressable>
   );

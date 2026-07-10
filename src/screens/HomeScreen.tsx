@@ -1,3 +1,14 @@
+/**
+ * HomeScreen.tsx
+ *
+ * Pantalla principal de la aplicación.
+ *
+ * Muestra el catálogo de productos obtenido desde la API, permite filtrar
+ * por categorías, actualizar la información mediante pull-to-refresh,
+ * cargar más productos utilizando paginación y navegar tanto al detalle
+ * de un producto como al carrito de compras.
+ */
+
 import React from 'react';
 import {
   ActivityIndicator,
@@ -12,8 +23,14 @@ import { useProducts } from '../hooks/useProducts';
 import ProductCard from '../components/ProductCard';
 import { useCart } from '../context/CartContext';
 
+/**
+ * Pantalla principal del catálogo.
+ */
 export default function HomeScreen({ navigation }: { navigation: any }) {
+  // Obtiene la cantidad total de productos agregados al carrito.
   const { cartCount } = useCart();
+
+  // Consume el hook encargado de administrar el catálogo de productos.
   const {
     products,
     categories,
@@ -28,11 +45,24 @@ export default function HomeScreen({ navigation }: { navigation: any }) {
     loadProducts,
   } = useProducts();
 
+  /**
+   * Actualiza la categoría seleccionada y vuelve a cargar
+   * los productos correspondientes.
+   *
+   * @param categoryId Identificador de la categoría seleccionada.
+   */
   function handleCategorySelect(categoryId: number | null) {
     setSelectedCategory(categoryId);
     loadProducts(categoryId, true);
   }
 
+  /**
+   * Solicita la siguiente página de productos cuando el usuario
+   * llega al final de la lista.
+   *
+   * Evita realizar múltiples peticiones simultáneas y verifica
+   * que aún existan elementos por cargar.
+   */
   function handleLoadMore() {
     if (loadingMore || !hasMore) {
       return;
@@ -41,6 +71,7 @@ export default function HomeScreen({ navigation }: { navigation: any }) {
     loadProducts(selectedCategory, false);
   }
 
+  // Muestra un indicador de carga durante la obtención inicial de datos.
   if (loading) {
     return (
       <View style={styles.centered}>
@@ -49,11 +80,16 @@ export default function HomeScreen({ navigation }: { navigation: any }) {
     );
   }
 
+  // Muestra un mensaje de error y permite reintentar la operación.
   if (error) {
     return (
       <View style={styles.centered}>
         <Text style={styles.error}>{error}</Text>
-        <TouchableOpacity style={styles.retryButton} onPress={() => loadProducts(selectedCategory, true)}>
+
+        <TouchableOpacity
+          style={styles.retryButton}
+          onPress={() => loadProducts(selectedCategory, true)}
+        >
           <Text style={styles.retryText}>Reintentar</Text>
         </TouchableOpacity>
       </View>
@@ -62,17 +98,30 @@ export default function HomeScreen({ navigation }: { navigation: any }) {
 
   return (
     <View style={styles.container}>
+
+      {/* Encabezado con título y acceso al carrito. */}
       <View style={styles.headerRow}>
         <View style={styles.headerText}>
           <Text style={styles.title}>Catálogo</Text>
-          <Text style={styles.subtitle}>Explora productos y encuentra lo que buscas</Text>
+          <Text style={styles.subtitle}>
+            Explora productos y encuentra lo que buscas
+          </Text>
         </View>
-        <TouchableOpacity style={styles.cartButton} onPress={() => navigation.navigate('Cart')}>
+
+        <TouchableOpacity
+          style={styles.cartButton}
+          onPress={() => navigation.navigate('Cart')}
+        >
           <Text style={styles.cartButtonText}>🛒</Text>
-          {cartCount > 0 ? <Text style={styles.cartBadge}>{cartCount}</Text> : null}
+
+          {/* Muestra la cantidad de productos únicamente cuando es mayor a cero. */}
+          {cartCount > 0 ? (
+            <Text style={styles.cartBadge}>{cartCount}</Text>
+          ) : null}
         </TouchableOpacity>
       </View>
 
+      {/* Lista horizontal utilizada para seleccionar una categoría. */}
       <FlatList
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -81,12 +130,21 @@ export default function HomeScreen({ navigation }: { navigation: any }) {
         contentContainerStyle={styles.categoryList}
         renderItem={({ item }) => {
           const isActive = selectedCategory === item.id;
+
           return (
             <TouchableOpacity
-              style={[styles.categoryChip, isActive && styles.categoryChipActive]}
+              style={[
+                styles.categoryChip,
+                isActive && styles.categoryChipActive,
+              ]}
               onPress={() => handleCategorySelect(item.id)}
             >
-              <Text style={[styles.categoryChipText, isActive && styles.categoryChipTextActive]}>
+              <Text
+                style={[
+                  styles.categoryChipText,
+                  isActive && styles.categoryChipTextActive,
+                ]}
+              >
                 {item.name}
               </Text>
             </TouchableOpacity>
@@ -94,40 +152,60 @@ export default function HomeScreen({ navigation }: { navigation: any }) {
         }}
       />
 
-    {products.length === 0 ? (
-      <View style={styles.emptyContainer}>
-        <Text style={styles.empty}>No hay productos disponibles en esta categoría.</Text>
-      </View>
-    ) : (
-      <FlatList
-        data={products}
-        numColumns={2}
-        keyExtractor={(item) => item.id.toString()}
-        contentContainerStyle={styles.list}
-        columnWrapperStyle={styles.row}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={() => {
-              setRefreshing(true);
-              loadProducts(selectedCategory, true);
-            }}
-            tintColor="#2563eb"
-          />
-        }
-        onEndReached={handleLoadMore}
-        onEndReachedThreshold={0.2}
-        ListFooterComponent={loadingMore ? <ActivityIndicator size="small" color="#2563eb" style={styles.loader} /> : null}
-        renderItem={({ item }) => (
-          <View style={styles.productItem}>
-            <ProductCard
-              product={item}
-              onPress={() => navigation.navigate('Detail', { product: item })}
+      {/* Si la categoría no contiene productos, se muestra un mensaje informativo. */}
+      {products.length === 0 ? (
+        <View style={styles.emptyContainer}>
+          <Text style={styles.empty}>
+            No hay productos disponibles en esta categoría.
+          </Text>
+        </View>
+      ) : (
+        <FlatList
+          data={products}
+          numColumns={2}
+          keyExtractor={(item) => item.id.toString()}
+          contentContainerStyle={styles.list}
+          columnWrapperStyle={styles.row}
+
+          // Permite actualizar el catálogo deslizando hacia abajo.
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={() => {
+                setRefreshing(true);
+                loadProducts(selectedCategory, true);
+              }}
+              tintColor="#2563eb"
             />
-          </View>
-        )}
-      />
-    )}
+          }
+
+          // Implementa la paginación del catálogo.
+          onEndReached={handleLoadMore}
+          onEndReachedThreshold={0.2}
+
+          // Muestra un indicador mientras se cargan más productos.
+          ListFooterComponent={
+            loadingMore ? (
+              <ActivityIndicator
+                size="small"
+                color="#2563eb"
+                style={styles.loader}
+              />
+            ) : null
+          }
+
+          renderItem={({ item }) => (
+            <View style={styles.productItem}>
+              <ProductCard
+                product={item}
+                onPress={() =>
+                  navigation.navigate('Detail', { product: item })
+                }
+              />
+            </View>
+          )}
+        />
+      )}
     </View>
   );
 }
