@@ -95,7 +95,7 @@ https://api.escuelajs.co/api/v1
 ## 1. Clonar el repositorio
 
 ```bash
-git clone https://github.com/tu-usuario/platzi-store.git
+git clone https://github.com/victoralejandrobriones/platzi-store.git
 ```
 
 ## 2. Entrar al proyecto
